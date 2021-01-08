@@ -36,6 +36,7 @@ CONF_SUNSET_OFFSET, DEFAULT_SUNSET_OFFSET = "sunset_offset", 0
 CONF_SUNSET_TIME = "sunset_time"
 CONF_TAKE_OVER_CONTROL, DEFAULT_TAKE_OVER_CONTROL = "take_over_control", True
 CONF_TRANSITION, DEFAULT_TRANSITION = "transition", 45
+CONF_TWILIGHT_DEPRESSION, DEFAULT_TWILIGHT_DEPRESSION = "twilight_depression", 90
 
 SLEEP_MODE_SWITCH = "sleep_mode_switch"
 ADAPT_COLOR_SWITCH = "adapt_color_switch"
@@ -54,9 +55,22 @@ CONF_TURN_ON_LIGHTS = "turn_on_lights"
 TURNING_OFF_DELAY = 5
 
 
+def type_between(type_, min_, max_, min_included=True, max_included=True):
+    """Return a given type between 'min_' and 'max_'."""
+    return vol.All(
+        vol.Coerce(type_),
+        vol.Range(
+            min=min_,
+            max=max_,
+            min_included=min_included,
+            max_included=max_included,
+        ),
+    )
+
+
 def int_between(min_int, max_int):
     """Return an integer between 'min_int' and 'max_int'."""
-    return vol.All(vol.Coerce(int), vol.Range(min=min_int, max=max_int))
+    return type_between(int, min_int, max_int)
 
 
 VALIDATION_TUPLES = [
@@ -79,6 +93,11 @@ VALIDATION_TUPLES = [
     (CONF_TAKE_OVER_CONTROL, DEFAULT_TAKE_OVER_CONTROL, bool),
     (CONF_DETECT_NON_HA_CHANGES, DEFAULT_DETECT_NON_HA_CHANGES, bool),
     (CONF_SEPARATE_TURN_ON_COMMANDS, DEFAULT_SEPARATE_TURN_ON_COMMANDS, bool),
+    (
+        CONF_TWILIGHT_DEPRESSION,
+        DEFAULT_TWILIGHT_DEPRESSION,
+        type_between(float, 0, 90, min_included=False),
+    ),
 ]
 
 

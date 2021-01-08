@@ -110,6 +110,7 @@ from .const import (
     CONF_TAKE_OVER_CONTROL,
     CONF_TRANSITION,
     CONF_TURN_ON_LIGHTS,
+    CONF_TWILIGHT_DEPRESSION,
     DOMAIN,
     EXTRA_VALIDATION,
     ICON,
@@ -543,6 +544,7 @@ class AdaptiveSwitch(SwitchEntity, RestoreEntity):
             sunrise_time=data[CONF_SUNRISE_TIME],
             sunset_offset=data[CONF_SUNSET_OFFSET],
             sunset_time=data[CONF_SUNSET_TIME],
+            twilight_depression=data[CONF_TWILIGHT_DEPRESSION],
             time_zone=self.hass.config.time_zone,
         )
 
@@ -1004,6 +1006,7 @@ class SunLightSettings:
     sunrise_time: Optional[datetime.time]
     sunset_offset: Optional[datetime.timedelta]
     sunset_time: Optional[datetime.time]
+    twilight_depression: float
     time_zone: datetime.tzinfo
 
     def get_sun_events(self, date: datetime.datetime) -> Dict[str, float]:
@@ -1087,8 +1090,11 @@ class SunLightSettings:
             return self.sleep_brightness
         if percent > 0:
             return self.max_brightness
+        depression_pct = self.twilight_depression / 90
+        if percent < -depression_pct:
+            return self.min_brightness
         delta_brightness = self.max_brightness - self.min_brightness
-        percent = 1 + percent
+        percent = 1 + percent / depression_pct
         return (delta_brightness * percent) + self.min_brightness
 
     def calc_color_temp_kelvin(self, percent: float, is_sleep: bool) -> float:
